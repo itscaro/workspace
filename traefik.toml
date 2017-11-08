@@ -1,0 +1,14 @@
+################################################################
+# Web configuration backend
+################################################################
+[web]
+address = ":8080"
+################################################################
+# Docker configuration backend
+################################################################
+[docker]
+domain = "dev"
+watch = true
+#endpoint = "tcp://localhost:2375"
+endpoint = "unix:///var/run/docker.sock"
+exposedbydefault = false
