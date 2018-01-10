@@ -1,26 +1,70 @@
-version: '3.3'
+version: '3.4'
 
 services:
-  proxy:
+  traefik:
     image: traefik
-    networks:
-      - gateway
-    ports:
-      - 80:80
-      - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./traefik.toml:/traefik.toml
+    ports:
+      - 80:80
+      - 18080:8080
+    networks:
+      - network
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 10
+        window: 380s
+      placement:
+        constraints:
+          - 'node.role == manager'
+          - 'node.platform.os == linux'
+
+  portainer:
+    image: portainer/portainer
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./portainer:/data
+    ports:
+      - 9000:9000
+    networks:
+      - network
+    deploy:
+      replicas: 1
+      resources:
+        reservations:
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 10
+        window: 380s
+      placement:
+        constraints:
+          - 'node.role == manager'
+          - 'node.platform.os == linux'
+
   dns:
     image: phensley/docker-dns
-    command: --domain dev
-    networks:
-      - gateway
-    ports:
-      - 53:53/udp
+    command: --domain local
     volumes:
       - /var/run/docker.sock:/docker.sock
+    ports:
+      - 53:53/udp
+    networks:
+      - network
+    deploy:
+        replicas: 1
 
 networks:
-  gateway:
-    driver: bridge
+  network:
+      #driver: bridge
+      driver: overlay
+      attachable: true

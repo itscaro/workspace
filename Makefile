@@ -5,7 +5,11 @@ up-connect: up connect
 
 .PHONY: up
 up:
-	docker-compose up -d
+	docker stack deploy workspace --compose-file docker-compose.yml
+
+.PHONY: down
+down:
+	docker stack rm workspace
 
 .PHONY: connect
 connect:
